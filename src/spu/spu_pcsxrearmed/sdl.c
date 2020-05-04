@@ -17,7 +17,7 @@
  */
 
 #include <stdlib.h>
-#include <SDL.h>
+#include <SDL2/SDL.h>
 #include <stdint.h>
 #include "out.h"
 #include "spu_config.h"  // senquack - To get spu settings

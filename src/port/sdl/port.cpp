@@ -8,7 +8,11 @@
 #include "plugins.h"
 #include "plugin_lib.h"
 #include "perfmon.h"
-#include <SDL.h>
+#include <SDL2/SDL.h>
+
+SDL_Texture *SDLTEXTURE;
+SDL_Renderer *SDLRENDERER;
+SDL_Window *SDLWINDOW;
 
 /* PATH_MAX inclusion */
 #include <limits.h>
@@ -47,7 +51,7 @@ enum {
 	DKEY_TOTAL
 };
 
-static SDL_Surface *screen;
+static SDL_Window *screen;
 unsigned short *SCREEN;
 
 static bool pcsx4all_initted = false;
@@ -65,9 +69,8 @@ void config_save();
 
 static void pcsx4all_exit(void)
 {
-	if (SDL_MUSTLOCK(screen))
-		SDL_UnlockSurface(screen);
-
+  if (SCREEN) free(SCREEN);
+  
 	SDL_Quit();
 
 	if (pcsx4all_initted == true) {
@@ -472,7 +475,6 @@ static unsigned short pad2 = 0xffff;
 void pad_update(void)
 {
 	SDL_Event event;
-	Uint8 *keys = SDL_GetKeyState(NULL);
 
 	while (SDL_PollEvent(&event)) {
 		switch (event.type) {
@@ -481,12 +483,99 @@ void pad_update(void)
 			break;
 		case SDL_KEYDOWN:
 			switch (event.key.keysym.sym) {
-#ifndef GCW_ZERO
+      case SDLK_x:
+        pad1 &= ~(1 << DKEY_CROSS);
+        break;
+      case SDLK_a:
+        pad1 &= ~(1 << DKEY_TRIANGLE);
+        break;
+      case SDLK_s:
+        pad1 &= ~(1 << DKEY_CIRCLE);
+        break;
+      case SDLK_z:
+        pad1 &= ~(1 << DKEY_SQUARE);
+        break;
+      case SDLK_UP:
+        pad1 &= ~(1 << DKEY_UP);
+        break;
+      case SDLK_DOWN:
+        pad1 &= ~(1 << DKEY_DOWN);
+        break;
+      case SDLK_LEFT:
+        pad1 &= ~(1 << DKEY_LEFT);
+        break;
+      case SDLK_RIGHT:
+        pad1 &= ~(1 << DKEY_RIGHT);
+        break;
+      case SDLK_RETURN:
+        pad1 &= ~(1 << DKEY_START);
+        break;
+      case SDLK_LALT:
+        pad1 &= ~(1 << DKEY_SELECT);
+        break;
+      case SDLK_q:
+        pad1 &= ~(1 << DKEY_L1);
+        break;
+      case SDLK_1:
+        pad1 &= ~(1 << DKEY_L2);
+        break;
+      case SDLK_w:
+        pad1 &= ~(1 << DKEY_R1);
+        break;
+      case SDLK_2:
+        pad1 &= ~(1 << DKEY_R2);
+        break;
+      }
+      break;
+		case SDL_KEYUP:
+			switch (event.key.keysym.sym) {
+      case SDLK_x:
+        pad1 |= (1 << DKEY_CROSS);
+        break;
+      case SDLK_a:
+        pad1 |= (1 << DKEY_TRIANGLE);
+        break;
+      case SDLK_s:
+        pad1 |= (1 << DKEY_CIRCLE);
+        break;
+      case SDLK_z:
+        pad1 |= (1 << DKEY_SQUARE);
+        break;
+      case SDLK_UP:
+        pad1 |= (1 << DKEY_UP);
+        break;
+      case SDLK_DOWN:
+        pad1 |= (1 << DKEY_DOWN);
+        break;
+      case SDLK_LEFT:
+        pad1 |= (1 << DKEY_LEFT);
+        break;
+      case SDLK_RIGHT:
+        pad1 |= (1 << DKEY_RIGHT);
+        break;
+      case SDLK_RETURN:
+        pad1 |= (1 << DKEY_START);
+        printf("start\n");
+        break;
+      case SDLK_LALT:
+        pad1 |= (1 << DKEY_SELECT);
+        break;
+      case SDLK_q:
+        pad1 |= (1 << DKEY_L1);
+        break;
+      case SDLK_1:
+        pad1 |= (1 << DKEY_L2);
+        break;
+      case SDLK_w:
+        pad1 |= (1 << DKEY_R1);
+        break;
+      case SDLK_2:
+        pad1 |= (1 << DKEY_R2);
+        break;
 			case SDLK_ESCAPE:
 				event.type = SDL_QUIT;
 				SDL_PushEvent(&event);
 				break;
-#endif
 			case SDLK_v: { Config.ShowFps=!Config.ShowFps; } break;
 			default: break;
 			}
@@ -496,44 +585,8 @@ void pad_update(void)
 		}
 	}
 
-	int k = 0;
-	while (keymap[k].key) {
-		if (keys[keymap[k].key]) {
-			pad1 &= ~(1 << keymap[k].bit);
-		} else {
-			pad1 |= (1 << keymap[k].bit);
-		}
-		k++;
-	}
-
-	/* Special key combos for GCW-Zero */
-#ifdef GCW_ZERO
-	// SELECT+B for psx's SELECT
-	if (keys[SDLK_ESCAPE] && keys[SDLK_LALT]) {
-		pad1 &= ~(1 << DKEY_SELECT);
-		pad1 |= (1 << DKEY_CROSS);
-	} else {
-		pad1 |= (1 << DKEY_SELECT);
-	}
-
-	// SELECT+L1 for psx's L2
-	if (keys[SDLK_ESCAPE] && keys[SDLK_TAB]) {
-		pad1 &= ~(1 << DKEY_L2);
-		pad1 |= (1 << DKEY_L1);
-	} else {
-		pad1 |= (1 << DKEY_L2);
-	}
-
-	// SELECT+R1 for R2
-	if (keys[SDLK_ESCAPE] && keys[SDLK_BACKSPACE]) {
-		pad1 &= ~(1 << DKEY_R2);
-		pad1 |= (1 << DKEY_R1);
-	} else {
-		pad1 |= (1 << DKEY_R2);
-	}
-
 	// SELECT+START for menu
-	if (keys[SDLK_ESCAPE] && keys[SDLK_RETURN] && !keys[SDLK_LALT]) {
+	/*if (keys[SDLK_ESCAPE] && keys[SDLK_RETURN] && !keys[SDLK_LALT]) {
 		//Sync and close any memcard files opened for writing
 		//TODO: Disallow entering menu until they are synced/closed
 		// automatically, displaying message that write is in progress.
@@ -548,13 +601,8 @@ void pad_update(void)
 		video_clear();
 		video_flip();
 		video_clear();
-#ifdef SDL_TRIPLEBUF
-		video_flip();
-		video_clear();
-#endif
 		pl_resume();    // Tell plugin_lib we're reentering emu
-	}
-#endif
+    }*/
 }
 
 unsigned short pad_read(int num)
@@ -568,15 +616,10 @@ void video_flip(void)
 		port_printf(5, 5, pl_data.stats_msg);
 	}
 
-	if (SDL_MUSTLOCK(screen))
-		SDL_UnlockSurface(screen);
-
-	SDL_Flip(screen);
-
-	if (SDL_MUSTLOCK(screen))
-		SDL_LockSurface(screen);
-
-	SCREEN = (Uint16 *)screen->pixels;
+  SDL_UpdateTexture(SDLTEXTURE, NULL, SCREEN, 320 * 2);
+  SDL_RenderClear(SDLRENDERER);
+  SDL_RenderCopy(SDLRENDERER, SDLTEXTURE, NULL, NULL);
+  SDL_RenderPresent(SDLRENDERER);
 }
 
 /* This is used by gpu_dfxvideo only as it doesn't scale itself */
@@ -600,7 +643,7 @@ void video_set(unsigned short *pVideo, unsigned int width, unsigned int height)
 
 void video_clear(void)
 {
-	memset(screen->pixels, 0, screen->pitch*screen->h);
+	memset(SCREEN, 0, 320*240*2);
 }
 
 /* This is needed to override redirecting to stderr.txt and stdout.txt
@@ -1072,24 +1115,25 @@ int main (int argc, char **argv)
 
 	atexit(pcsx4all_exit);
 
-#ifdef SDL_TRIPLEBUF
-	int flags = SDL_HWSURFACE | SDL_TRIPLEBUF;
-#else
-	int flags = SDL_HWSURFACE | SDL_DOUBLEBUF;
-#endif
+  SDL_CreateWindowAndRenderer(0, 0, SDL_WINDOW_FULLSCREEN_DESKTOP, &SDLWINDOW, &SDLRENDERER);
 
-	screen = SDL_SetVideoMode(320, 240, 16, flags);
-	if (!screen) {
-		puts("NO Set VideoMode 320x240x16");
+	if (!SDLWINDOW) {
+		puts("SDL_CreateWindowAndRenderer() failed.");
 		exit(0);
 	}
 
-	if (SDL_MUSTLOCK(screen))
-		SDL_LockSurface(screen);
-
-	SDL_WM_SetCaption("pcsx4all - SDL Version", "pcsx4all");
-
-	SCREEN = (Uint16 *)screen->pixels;
+  SCREEN = (uint16_t*)malloc(320*240*2);
+  
+  SDL_SetRenderDrawColor(SDLRENDERER, 0, 0, 0, 255);
+  SDL_RenderClear(SDLRENDERER);
+  SDL_RenderPresent(SDLRENDERER);
+  SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "linear");  // make the scaled rendering look smoother.
+  SDL_RenderSetLogicalSize(SDLRENDERER, 320, 240);
+  
+  SDLTEXTURE = SDL_CreateTexture(SDLRENDERER,
+                               SDL_PIXELFORMAT_RGB565,
+                               SDL_TEXTUREACCESS_STREAMING,
+                               320, 240);
 
 	if (argc < 2 || cdrfilename[0] == '\0') {
 		// Enter frontend main-menu:
