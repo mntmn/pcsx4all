@@ -27,11 +27,11 @@ CXX    = g++
 LD     = g++
 
 SYSROOT     := $(shell $(CC) --print-sysroot)
-SDL_CONFIG  := $(SYSROOT)/usr/local/bin/sdl2-config
+SDL_CONFIG  := sdl2-config
 SDL_CFLAGS  := $(shell $(SDL_CONFIG) --cflags)
 SDL_LIBS    := $(shell $(SDL_CONFIG) --libs)
 
-LDFLAGS = $(SDL_LIBS) -lSDL_mixer -lpthread -lz
+LDFLAGS = $(SDL_LIBS) -lpthread -lz
 
 # We want the GCW Zero handheld's keybindings (for dev testing purposes)
 C_ARCH = -march=native -DGCW_ZERO
