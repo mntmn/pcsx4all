@@ -27,4 +27,22 @@ sudo ldconfig /usr/local/lib
 make -j $(nproc)
 ```
 
+# Hints
+
+- Put a BIOS file (scph1001.bin, lowercase!) in ~/.pcsx4all/bios
+- Select the BIOS file under Core Settings -> Set BIOS file
+- Switch off HLE emulated BIOS
+- Navigate menu with cursor keys and CTRL to select
+- Keyboard mapping (you can customize these in src/port/sdl/port.cpp):
+  - Cursors: D-Pad
+  - Enter: Start
+  - Backspace: Select
+  - x: Circle
+  - a: Square
+  - s: Triangle
+  - z: Cross
+  - q: L1
+  - w: R1
+  - e: L2
+  - r: R2
 
