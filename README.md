@@ -22,6 +22,8 @@ make -j $(nproc)
 sudo make install
 cd ../..
 
+sudo ldconfig /usr/local/lib
+
 make -j $(nproc)
 ```
 
