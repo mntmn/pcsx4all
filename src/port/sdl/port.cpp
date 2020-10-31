@@ -601,26 +601,30 @@ void pad_update(void)
       printf("joybutton: %d\n", event.jbutton.button);
       switch (event.jbutton.button) {
       case 0: pad1 |= (1 << DKEY_CROSS); break;
-      case 1: pad1 |= (1 << DKEY_TRIANGLE); break;
-      case 2: pad1 |= (1 << DKEY_CIRCLE); break;
-      case 3: pad1 |= (1 << DKEY_SQUARE); break;
+      case 1: pad1 |= (1 << DKEY_CIRCLE); break;
+      case 2: pad1 |= (1 << DKEY_SQUARE); break;
+      case 3: pad1 |= (1 << DKEY_TRIANGLE); break;
       case 4: pad1 |= (1 << DKEY_L1); break;
       case 5: pad1 |= (1 << DKEY_R1); break;
       case 6: pad1 |= (1 << DKEY_SELECT); break;
       case 7: pad1 |= (1 << DKEY_START); break;
+      case 8: pad1 |= (1 << DKEY_L2); break;
+      case 9: pad1 |= (1 << DKEY_R2); break;
       default: break;
       }
       break;
     case SDL_JOYBUTTONDOWN:  /* Handle Joystick Button Presses */
       switch (event.jbutton.button) {
       case 0: pad1 &= ~(1 << DKEY_CROSS); break;
-      case 1: pad1 &= ~(1 << DKEY_TRIANGLE); break;
-      case 2: pad1 &= ~(1 << DKEY_CIRCLE); break;
-      case 3: pad1 &= ~(1 << DKEY_SQUARE); break;
+      case 1: pad1 &= ~(1 << DKEY_CIRCLE); break;
+      case 2: pad1 &= ~(1 << DKEY_SQUARE); break;
+      case 3: pad1 &= ~(1 << DKEY_TRIANGLE); break;
       case 4: pad1 &= ~(1 << DKEY_L1); break;
       case 5: pad1 &= ~(1 << DKEY_R1); break;
       case 6: pad1 &= ~(1 << DKEY_SELECT); break;
       case 7: pad1 &= ~(1 << DKEY_START); break;
+      case 8: pad1 &= ~(1 << DKEY_L2); break;
+      case 9: pad1 &= ~(1 << DKEY_R2); break;
       default: break;
       }
       break;
