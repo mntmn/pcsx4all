@@ -577,10 +577,54 @@ void pad_update(void)
 				SDL_PushEvent(&event);
 				break;
 			case SDLK_v: { Config.ShowFps=!Config.ShowFps; } break;
+        
 			default: break;
 			}
 			break;
 
+    case SDL_JOYHATMOTION:
+      printf("joyhat: %d\n", event.jhat.value);
+      switch (event.jhat.value) {
+      case 0: pad1 |= (1<<DKEY_LEFT|1<<DKEY_RIGHT|1<<DKEY_UP|1<<DKEY_DOWN); break;
+      case SDL_HAT_LEFT: pad1 &= ~(1 << DKEY_LEFT); break;
+      case SDL_HAT_RIGHT: pad1 &= ~(1 << DKEY_RIGHT); break;
+      case SDL_HAT_UP: pad1 &= ~(1 << DKEY_UP); break;
+      case SDL_HAT_DOWN: pad1 &= ~(1 << DKEY_DOWN); break;
+      case SDL_HAT_LEFTUP: pad1 &= ~(1 << DKEY_LEFT|1<<DKEY_UP); break;
+      case SDL_HAT_RIGHTUP: pad1 &= ~(1 <<DKEY_RIGHT|1<<DKEY_UP); break;
+      case SDL_HAT_LEFTDOWN: pad1 &= ~(1 << DKEY_LEFT|1<<DKEY_DOWN); break;
+      case SDL_HAT_RIGHTDOWN: pad1 &= ~(1 << DKEY_RIGHT|1<<DKEY_DOWN); break;
+      default: break;
+      }
+      break;
+    case SDL_JOYBUTTONUP:  /* Handle Joystick Button Presses */
+      printf("joybutton: %d\n", event.jbutton.button);
+      switch (event.jbutton.button) {
+      case 0: pad1 |= (1 << DKEY_CROSS); break;
+      case 1: pad1 |= (1 << DKEY_TRIANGLE); break;
+      case 2: pad1 |= (1 << DKEY_CIRCLE); break;
+      case 3: pad1 |= (1 << DKEY_SQUARE); break;
+      case 4: pad1 |= (1 << DKEY_L1); break;
+      case 5: pad1 |= (1 << DKEY_R1); break;
+      case 6: pad1 |= (1 << DKEY_SELECT); break;
+      case 7: pad1 |= (1 << DKEY_START); break;
+      default: break;
+      }
+      break;
+    case SDL_JOYBUTTONDOWN:  /* Handle Joystick Button Presses */
+      switch (event.jbutton.button) {
+      case 0: pad1 &= ~(1 << DKEY_CROSS); break;
+      case 1: pad1 &= ~(1 << DKEY_TRIANGLE); break;
+      case 2: pad1 &= ~(1 << DKEY_CIRCLE); break;
+      case 3: pad1 &= ~(1 << DKEY_SQUARE); break;
+      case 4: pad1 &= ~(1 << DKEY_L1); break;
+      case 5: pad1 &= ~(1 << DKEY_R1); break;
+      case 6: pad1 &= ~(1 << DKEY_SELECT); break;
+      case 7: pad1 &= ~(1 << DKEY_START); break;
+      default: break;
+      }
+      break;
+      
 		default: break;
 		}
 	}
@@ -1115,13 +1159,22 @@ int main (int argc, char **argv)
 
 	atexit(pcsx4all_exit);
 
-  SDL_CreateWindowAndRenderer(0, 0, SDL_WINDOW_FULLSCREEN_DESKTOP, &SDLWINDOW, &SDLRENDERER);
+  //SDL_CreateWindowAndRenderer(0, 0, SDL_WINDOW_FULLSCREEN_DESKTOP, &SDLWINDOW, &SDLRENDERER);
+  SDL_CreateWindowAndRenderer(640, 480, 0, &SDLWINDOW, &SDLRENDERER);
 
 	if (!SDLWINDOW) {
 		puts("SDL_CreateWindowAndRenderer() failed.");
 		exit(0);
 	}
 
+  SDL_Joystick *joystick;
+
+  SDL_JoystickEventState(SDL_ENABLE);
+  joystick = SDL_JoystickOpen(0);
+  if (joystick) {
+    puts("SDL_JoystickOpen() succeeded.");
+  }
+  
   SCREEN = (uint16_t*)malloc(320*240*2);
   
   SDL_SetRenderDrawColor(SDLRENDERER, 0, 0, 0, 255);

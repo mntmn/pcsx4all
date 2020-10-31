@@ -97,6 +97,51 @@ static unsigned int key_read(void)
 			default: break;
 			}
 			break;
+    case SDL_JOYAXISMOTION:
+      //printf("joyaxis: %d val: %d\n", event.jaxis.axis, event.jaxis.value);
+      break;
+    case SDL_JOYHATMOTION:
+      printf("joyhat: %d\n", event.jhat.value);
+      switch (event.jhat.value) {
+          case 0: ret &= ~(KEY_LEFT|KEY_RIGHT|KEY_UP|KEY_DOWN); break;
+          case SDL_HAT_LEFT: ret |= KEY_LEFT; break;
+          case SDL_HAT_RIGHT: ret |= KEY_RIGHT; break;
+          case SDL_HAT_UP: ret |= KEY_UP; break;
+          case SDL_HAT_DOWN: ret |= KEY_DOWN; break;
+          case SDL_HAT_LEFTUP: ret |= KEY_LEFT|KEY_UP; break;
+          case SDL_HAT_RIGHTUP: ret |= KEY_RIGHT|KEY_UP; break;
+          case SDL_HAT_LEFTDOWN: ret |= KEY_LEFT|KEY_DOWN; break;
+          case SDL_HAT_RIGHTDOWN: ret |= KEY_RIGHT|KEY_DOWN; break;
+            default: break;
+      }
+      break;
+    case SDL_JOYBUTTONDOWN:  /* Handle Joystick Button Presses */
+      printf("joybutton: %d\n", event.jbutton.button);
+      switch (event.jbutton.button) {
+          case 0: ret |= KEY_A; break;
+          case 1: ret |= KEY_B; break;
+          case 2: ret |= KEY_X; break;
+          case 3: ret |= KEY_Y; break;
+          case 4: ret |= KEY_L; break;
+          case 5: ret |= KEY_R; break;
+          case 6: ret |= KEY_SELECT; break;
+          case 7: ret |= KEY_START; break;
+            default: break;
+        }
+      break;
+    case SDL_JOYBUTTONUP:  /* Handle Joystick Button Presses */
+      switch (event.jbutton.button) {
+          case 0: ret &= ~KEY_A; break;
+          case 1: ret &= ~KEY_B; break;
+          case 2: ret &= ~KEY_X; break;
+          case 3: ret &= ~KEY_Y; break;
+          case 4: ret &= KEY_L; break;
+          case 5: ret &= KEY_R; break;
+          case 6: ret &= ~KEY_SELECT; break;
+          case 7: ret &= ~KEY_START; break;
+            default: break;
+        }
+      break;
 		default: break;
 		}
 	}
